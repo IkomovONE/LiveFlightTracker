@@ -1,0 +1,115 @@
+.MainMenu {
+  
+
+  background: linear-gradient(to top, rgb(126, 213, 253), rgb(42, 75, 119));
+  
+  
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 10px;
+
+  box-sizing: border-box;
+  
+}
+
+
+h1 {
+
+  margin-top: 0.5cm;
+
+  margin-left: 1cm;
+
+  font-size: 2.7cm;
+
+  font-weight: 800;
+
+  margin-bottom: 0cm;
+
+  
+ 
+
+}
+
+.BigButtons {
+  color: rgb(255, 255, 255);
+  
+  background: transparent;
+
+  
+
+  margin-left: 2cm;
+
+  
+  border-width: 0.0001cm;
+  padding: 0.5rem 1rem;
+  font-weight: bold;
+  font-size: 2rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+
+span {
+
+  margin-left: 2cm;
+
+  font-size: xx-large;
+
+  color: rgba(116, 223, 255, 0.678);
+
+
+}
+
+h2 {
+
+  font-size: 2cm;
+
+  margin-left: 1cm;
+
+  margin-bottom: 0cm;
+
+}
+
+p {
+
+  font-size: 1cm;
+
+  margin-left: 1cm;
+
+
+  margin-bottom: 4cm;
+
+}
+
+
+
+
+.BigButtons a {
+
+  text-decoration: none;  /* remove underline */
+  color: inherit;         /* inherit text color from button */
+  outline: none;          /* remove focus outline */
+  box-shadow: none;
+
+}
+
+.BigButtons:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+
+pre {
+
+  font-size: large;
+
+  margin-left: 7cm;
+
+  margin-top: 1cm;
+
+
+}
+
+
+

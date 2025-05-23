@@ -1,24 +1,52 @@
-import logo from './logo.svg';
 import './App.css';
+import TopBar from './TopBar'
+import MainMenu from './MainMenu';
+//import About from './About'; 
+//import Login from './Login'; 
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 function App() {
   return (
+    <Router>
+
+
+
+    
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+
+        <TopBar></TopBar>
+        
+        
       </header>
+
+      <main>
+          <Routes>
+            <Route path="/" element={<MainMenu />} />
+          </Routes>
+      </main>
+
+
+      <footer style={{
+        backgroundColor: "rgb(34, 58, 88)",
+        color: "#fff",
+        textAlign: "center",
+        padding: "20px 0",
+        marginTop: "0px",
+        fontSize: "14px"
+      }}>
+        <hr style={{ border: "0", borderTop: "1px solid black", margin: "0 20%" }} />
+        <p style={{ marginTop: "10px" }}>
+          © {new Date().getFullYear()} WingPath · All rights reserved.
+        </p>
+      </footer>
+
+      
+
+
     </div>
+
+    </Router>
   );
 }
 
