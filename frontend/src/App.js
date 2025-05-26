@@ -1,6 +1,7 @@
 import './App.css';
 import TopBar from './TopBar'
 import MainMenu from './MainMenu';
+import MapView from './MapView';
 //import About from './About'; 
 //import Login from './Login'; 
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
@@ -23,6 +24,7 @@ function App() {
       <main>
           <Routes>
             <Route path="/" element={<MainMenu />} />
+            <Route path="/map" element={<MapView />} />
           </Routes>
       </main>
 

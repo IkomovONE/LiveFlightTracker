@@ -1,5 +1,9 @@
 /* App.css */
 
+
+@import url('leaflet/dist/leaflet.css');
+
+
 html, body, #root {
   height: 100%;
   margin: 0;
@@ -21,7 +25,7 @@ html, body, #root {
 
 .App-header {
   
-  height: 100px; /* Fixed height for TopBar */
+  height: 80px; /* Fixed height for TopBar */
   display: flex;
   align-items: center;
   padding: 0 20px;

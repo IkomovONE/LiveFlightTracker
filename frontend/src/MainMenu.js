@@ -32,12 +32,12 @@ function MainMenu() {
 
       <button className='BigButtons'><Link to='/map'> {'>'} The Flights Map</Link></button>
 
-      <span>|</span>
+      <span className='MenuSpans'>|</span>
 
 
       <button className='BigButtons'><Link to='/search'> {'>'} Search</Link></button>
 
-      <span>|</span>
+      <span className='MenuSpans'>|</span>
 
       <button className='BigButtons'><Link to='/cfs'> {'>'} Commercial Flight Schedule</Link></button>
 

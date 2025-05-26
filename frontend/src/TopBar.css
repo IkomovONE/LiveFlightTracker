@@ -11,7 +11,7 @@
   size: 3cm;
   left: 0cm;
   width: 100%;
-  height: 100px;
+  height: 80px;
   text-align: start;
 
   border: none; /* just in case */
@@ -94,7 +94,7 @@
   border: none;
   padding: 0.5rem 0.2cm;
   font-weight: 500;
-  font-size: 0.9cm;
+  font-size: 0.8cm;
   border-radius: 5px;
   cursor: pointer;
   transition: background 0.3s;

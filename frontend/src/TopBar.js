@@ -21,7 +21,7 @@ function TopBar() {
 
           <TopBarButton to="/">Home</TopBarButton>
 
-          <TopBarButton to="/">Map</TopBarButton>
+          <TopBarButton to="/map">Map</TopBarButton>
 
           <TopBarButton to="/">Search</TopBarButton>
 
