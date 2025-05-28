@@ -4,7 +4,7 @@ Live Flight Tracker is experimental pet project, a Web-based application which f
 
 ![Main page](./Main_page.jpeg)
 
-![App Architecture Diagram](./Architecture.jpeg)
+![App Architecture Diagram](./Architecture.jpg)
 
 
 
