@@ -1,139 +1,94 @@
-import './MapView.css'
-import { Link } from 'react-router-dom';
-import { motion, useInView } from 'framer-motion';
-import { useRef, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import './MapView.css';
+import { useState } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, ZoomControl } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-
-
-
+import FloatingMenu from './FloatingMenu';
+import WingPathLogo from './WingPathLogo.svg';
 
 function MapView() {
-
-  const ref = useRef(null);
-
-  const isInView = useInView(ref, { amount: 0.3, once: true });
-
-
+  const [selectedMap, setSelectedMap] = useState('OpenStreetMap');
   const [searchQuery, setSearchQuery] = useState('');
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [fadeIn, setFadeIn] = useState(false);
+
+  const toggleMenu = () => {
+    if (!menuOpen) {
+      setMenuOpen(true);
+      setTimeout(() => setFadeIn(true), 10); // allow DOM to render before animating
+    } else {
+      setFadeIn(false); // start fade-out (if you add it later)
+      setTimeout(() => setMenuOpen(false), 300); // remove after fade-out duration
+    }
+  };
 
   const handleSearch = () => {
-    // You can trigger a map pan or fetch logic here
     console.log("Searching for:", searchQuery);
   };
 
+  const tileLayers = {
+    OpenStreetMap: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    CartoVoyager: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+    CartoVoyagerDark: 'https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png',
+    EsriWorldImagery: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+  };
+
   return (
-    <div className="MapView" >
-
-
-
-      {/* 
-
-      <motion.div
-        initial={{ opacity: 0, y: 0 }}
-        animate={{ opacity: 1, y: 20 }}
-        transition={{ duration: 0.6, ease: 'easeOut' }}
-      >
-
-
-      <hr style={{ border: 'none', borderTop: '3px solid rgba(116, 223, 255, 0.678)', marginTop: '50px', width: '70%', marginLeft: '35px'}} />
-
-
-
-      <h1 className="mapTitle">MapView!
-      </h1>
-
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      <button className='MapBigButtons'><Link to='/map'> {'>'} The Flights Map</Link></button>
-
-      <span>|</span>
-
-
-      <button className='MapBigButtons'><Link to='/search'> {'>'} Search</Link></button>
-
-      <span>|</span>
-
-      <button className='MapBigButtons'><Link to='/cfs'> {'>'} Commercial Flight Schedule</Link></button>
-
-
-      </motion.div>
-
-
-      */}
-
-
-      <MapContainer  center={[60.1695, 24.9354]} zoom={6} style={{ zIndex: '500', height: '90vh', width: '100%', marginTop: '0cm'}}>
+    <div className="map-wrapper">
+      {/* Floating Hamburger Button */}
       
 
-      <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-      />
+      {/* Floating TopBar as Menu */}
+      
 
-       <div className='SearchField' >
+      {/* Map Controls (Search + Select Map) */}
+
+      <button className={`hamburger ${menuOpen ? 'expanded' : ''}`} onClick={toggleMenu}>
+
+        
+        
+        <img id= "hamlogo" src={WingPathLogo} alt="Logo"/> 
+
+        <span className='arrow'>↓</span>
+        
+        
+        
+      </button>
+        {menuOpen && (
+        <FloatingMenu className={fadeIn ? 'fade-in' : ''} />
+        
+        
+      )}
+      <div className="map-controls">
+        
         <input
           type="text"
           placeholder="Search flights..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          style={{ padding: '5px', marginRight: '8px' }}
         />
         <button onClick={handleSearch}>Search</button>
+
+        <select
+          onChange={(e) => setSelectedMap(e.target.value)}
+          value={selectedMap}
+        >
+          {Object.keys(tileLayers).map((key) => (
+            <option key={key} value={key}>{key}</option>
+          ))}
+        </select>
       </div>
 
-      <Marker position={[60.1695, 24.9354]}>
-        <Popup>Helsinki</Popup>
-      </Marker>
-
-
-    </MapContainer>
-
-
-      
-
-{/* 
-
-<motion.div
-        initial={{ opacity: 0, y: 0 }}
-        animate={{ opacity: 1, y: 20 }}
-        transition={{ duration: 0.6, ease: 'easeOut' }}
-      >
-<h2>Need to track a flight?</h2>
-
-</motion.div>
-
-
-<motion.div
-        initial={{ opacity: 0, y: 0 }}
-        animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
-        transition={{ delay: 1, duration: 0.6, ease: 'easeOut' }}
-      >
-
-<p ref={ref}>Whether you're picking someone up from the airport or just love watching the skies, FlightTracker gives you real-time access to flights across the globe. Search by airline, route, or flight number, and get instant updates on departure, arrival, delays, and more—all from a sleek, easy-to-use interface. Your window to the skies starts here.</p>
-
-</motion.div>
-
-
-*/}
-
-
-
-
-      
-        
-        
-      
+      {/* The Map */}
+      <MapContainer center={[60.1695, 24.9354]} zoom={6} zoomControl={false} style={{ height: '100vh', width: '100vw' }}>
+        <TileLayer
+          url={tileLayers[selectedMap]}
+          attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+        />
+        <ZoomControl position="bottomright" />
+        <Marker position={[60.1695, 24.9354]}>
+          <Popup>Helsinki</Popup>
+        </Marker>
+      </MapContainer>
     </div>
   );
 }

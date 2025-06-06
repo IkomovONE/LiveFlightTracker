@@ -1,0 +1,118 @@
+.FloatingMenu {
+  position: absolute;
+  top: 100px; /* Adjust based on your logo/button */
+  left: 5px;
+  z-index: 1000;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  width: 130px;
+  padding: 10px;
+  border-radius: 20px;
+
+  background: linear-gradient(to top, rgba(42, 75, 119, 0.95), rgba(34, 58, 88, 0.95));
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transform: translateY(-10px);
+  backdrop-filter: blur(8px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.FloatingMenu.fade-in {
+  opacity: 1;
+  transform: translateY(0px);
+  pointer-events: auto;
+}
+
+
+
+
+.FloatingMenuContent {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  flex-grow: 1;
+  gap: 10px;
+  
+}
+
+.FloatingMenuButtonMenu {
+
+  top: 0cm;
+
+  display: flex;
+
+  flex-direction: column;
+
+  font-size: medium;
+
+  
+
+  align-items: center;
+
+  padding-top: 1px;
+
+  
+
+  gap: 5px;
+ 
+}
+
+
+.FloatingMenuAccountMenu {
+
+  display: flex;
+
+  top: 0cm;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  background-color: rgba(255, 255, 255, 0.1);
+
+  border-radius: 30px;
+
+  width: 120px;
+  
+  gap: 2px;
+
+  
+
+}
+
+.TopBarButton {
+  color: white;
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  padding: 0.5rem 0.2cm;
+  font-weight: 500;
+  font-size: 0.6cm;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.TopBarButton:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

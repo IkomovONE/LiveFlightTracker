@@ -2,34 +2,28 @@ import './App.css';
 import TopBar from './TopBar'
 import MainMenu from './MainMenu';
 import MapView from './MapView';
-//import About from './About'; 
-//import Login from './Login'; 
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 
-function App() {
+function AppContent() {
+  const location = useLocation();
+  const hideTopbarRoutes = ['/map'];
+
+  const showElement = !hideTopbarRoutes.includes(location.pathname);
+
   return (
-    <Router>
-
-
-
-    
     <div className="App">
-      <header className="App-header">
-
-        <TopBar></TopBar>
-        
-        
-      </header>
+      {showElement && <header className="App-header">
+        <TopBar />
+      </header>}
 
       <main>
-          <Routes>
-            <Route path="/" element={<MainMenu />} />
-            <Route path="/map" element={<MapView />} />
-          </Routes>
+        <Routes>
+          <Route path="/" element={<MainMenu />} />
+          <Route path="/map" element={<MapView />} />
+        </Routes>
       </main>
 
-
-      <footer style={{
+      {showElement && <footer style={{
         backgroundColor: "rgb(34, 58, 88)",
         color: "#fff",
         textAlign: "center",
@@ -41,13 +35,15 @@ function App() {
         <p style={{ marginTop: "10px" }}>
           © {new Date().getFullYear()} WingPath · All rights reserved.
         </p>
-      </footer>
-
-      
-
-
+      </footer>}
     </div>
+  );
+}
 
+function App() {
+  return (
+    <Router>
+      <AppContent />
     </Router>
   );
 }
