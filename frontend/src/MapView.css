@@ -28,25 +28,112 @@
 
 .map-controls {
   position: absolute;
-  top: 15px;
-  left: 950px;
+  top: 10px;
+  right: 10px;
   z-index: 1000;
-  background: rgba(255, 255, 255, 0.9);
+  background: linear-gradient(to top, rgba(42, 75, 119, 0.95), rgba(34, 58, 88, 0.95));
   padding: 10px;
   border-radius: 8px;
   display: flex;
   gap: 10px;
+  transition: opacity 0.3s ease;
+  opacity: 0.8;
   flex-wrap: wrap;
   box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
-.map-controls input,
-.map-controls select,
+.map-controls:hover {
+
+  opacity: 0.85;
+}
+
+.mapSelector {
+  position: absolute;
+  top: 75px;
+  right: 10px;
+  z-index: 1000;
+  background: linear-gradient(to top, rgba(42, 75, 119, 0.95), rgba(34, 58, 88, 0.95));
+  padding: 10px;
+  border-radius: 8px;
+  display: flex;
+  gap: 10px;
+  transition: opacity 0.3s ease;
+  opacity: 0.8;
+  flex-wrap: wrap;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.mapSelector:hover {
+
+  opacity: 0.85;
+}
+
+.mapSelector label {
+  color: white;
+  font-weight: bold;
+  font-size: 0.5cm;
+  margin-right: 2px;
+  margin-top: 4px;
+}
+
+
+
+
+.map-controls input {
+  color: white;
+  text-decoration: none;
+  background: rgba(0, 0, 0, 0.212);
+  border: none;
+  padding: 0.5rem 0.2cm;
+  font-weight: 500;
+  font-size: 0.4cm;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
 .map-controls button {
-  font-size: 14px;
-  padding: 6px 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+
+
+  color: white;
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  padding: 0.5rem 0.2cm;
+  font-weight: 500;
+  font-size: 0.4cm;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s;
+
+}
+
+.map-controls button:hover {
+  background-color: rgba(255, 255, 255, 0.486);
+}
+
+.map-controls input:hover {
+  background-color: rgba(255, 255, 255, 0.076);
+}
+
+.mapSelector select {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  border-radius: 10px;
+  padding: 0.4em 0.6em;
+  font-size: 1rem;
+  appearance: none;
+  cursor: pointer;
+  transition: background 0.3s, border 0.3s;
+}
+
+.mapSelector select:hover,
+.mapSelector select:focus {
+  background: rgba(255, 255, 255, 0.1);
+  outline: none;
+  border-color: rgba(100, 200, 255, 0.7);
+  
 }
 
 
@@ -116,8 +203,8 @@ p {
 .hamburger {
   position: absolute;
   
-  top: 5px;
-  left: 5px;
+  top: 10px;
+  left: 10px;
   z-index: 1000;
   
   border: none;
@@ -126,19 +213,23 @@ p {
   width: 150px;
   font-weight: 800;
   font-size: 0.4cm;
-  border-radius: 20px;
+  border-radius: 8px;
   background: linear-gradient(to top, rgba(42, 75, 119, 0.95), rgba(34, 58, 88, 0.95));
   transition: background 0.3s, opacity 0.3s;
   display: flex;
   flex-direction: column;
   align-items: center;
-  opacity: 0.5;
+  opacity: 0.8;
   
 }
 
 .hamburger.expanded {
-  height: 80px; /* Or whatever height looks nice */
-  background-color: rgba(255, 255, 255, 0.1);
+  
+  
+
+  background: linear-gradient(to top, rgba(42, 75, 119, 0.95), rgba(34, 58, 88, 0.95));
+
+  opacity: 1;
 }
 
 .hamburger:hover {
@@ -172,10 +263,6 @@ p {
 }
 
 
-
-
-
-
 #hamlogo {
   margin-left: 0.5cm;
   width: 170px;
@@ -183,7 +270,48 @@ p {
   
 }
 
+.map-wrapper .leaflet-control-zoom {
 
+  
+  
+  background: linear-gradient(to bottom, rgba(42, 75, 119, 0.95), rgba(34, 58, 88, 0.95)) !important;
+  
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35) !important;
+  overflow: hidden !important;
+  backdrop-filter: blur(10px);
+  border: none;
+  border-radius: 8px !important;
+  opacity: 0.8;
+  
+}
+
+.map-wrapper .leaflet-control-zoom a {
+  color: white !important;
+  color: white !important;
+  fill: white !important;
+  font-size: 22px !important;
+  font-weight: 600 !important;
+  height: 40px !important;
+  width: 35px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background-color: transparent !important;
+  transition: background 0.3s ease, transform 0.1s ease;
+  border: none !important;
+
+  
+}
+
+.map-wrapper .leaflet-control-zoom a:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  transform: scale(1.05);
+}
+
+.map-wrapper .leaflet-control-zoom a:active {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  transform: scale(0.95);
+}
 
 @keyframes fadeIn {
   from {

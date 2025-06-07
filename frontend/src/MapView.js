@@ -68,6 +68,14 @@ function MapView() {
         />
         <button onClick={handleSearch}>Search</button>
 
+        
+      </div>
+
+
+      <div className="mapSelector">
+
+        <label htmlFor="mapSelect">Select Map:</label>
+
         <select
           onChange={(e) => setSelectedMap(e.target.value)}
           value={selectedMap}
@@ -76,6 +84,9 @@ function MapView() {
             <option key={key} value={key}>{key}</option>
           ))}
         </select>
+
+
+
       </div>
 
       {/* The Map */}
@@ -84,7 +95,7 @@ function MapView() {
           url={tileLayers[selectedMap]}
           attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
         />
-        <ZoomControl position="bottomright" />
+        <ZoomControl className="leaflet-control-zoom" position="bottomleft" />
         <Marker position={[60.1695, 24.9354]}>
           <Popup>Helsinki</Popup>
         </Marker>
