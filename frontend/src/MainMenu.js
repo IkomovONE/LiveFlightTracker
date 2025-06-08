@@ -26,11 +26,11 @@ function MainMenu() {
 
 
 
-      <h1>Track, save, search for desired flights!
+      <h1>Track Flights & Voyages with ease!
       </h1>
 
 
-      <button className='BigButtons'><Link to='/map'> {'>'} The Flights Map</Link></button>
+      <button className='BigButtons'><Link to='/map'> {'>'} The Routes Map</Link></button>
 
       <span className='MenuSpans'>|</span>
 
@@ -39,7 +39,7 @@ function MainMenu() {
 
       <span className='MenuSpans'>|</span>
 
-      <button className='BigButtons'><Link to='/cfs'> {'>'} Commercial Flight Schedule</Link></button>
+      <button className='BigButtons'><Link to='/cfs'> {'>'} Commercial Routes Schedules</Link></button>
 
 
       </motion.div>
