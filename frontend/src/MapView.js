@@ -1,6 +1,6 @@
 import './MapView.css';
-import { useState, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, ZoomControl } from 'react-leaflet';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, ZoomControl, useMapEvents, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
@@ -37,7 +37,14 @@ function MapView() {
   const [searchQuery, setSearchQuery] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
   const [fadeIn, setFadeIn] = useState(false);
-  const [trafficType, setTrafficType] = useState('plane'); // 'plane' or 'ship'
+  const [trafficType, setTrafficType] = useState('all');
+  const [aircrafts, setAircrafts] = useState([]);
+  const [selectedInfo, setSelectedInfo] = useState({});
+  const [loadingInfo, setLoadingInfo] = useState(null);
+  const [selectedAircraftIdx, setSelectedAircraftIdx] = useState(null);
+  const [lastBox, setLastBox] = useState(null);
+  const [canFetch, setCanFetch] = useState(true);
+  const mapRef = useRef();
 
   const toggleMenu = () => {
     if (!menuOpen) {
@@ -60,60 +67,7 @@ function MapView() {
     EsriWorldImagery: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
   };
 
-  // Finland bounding box: lat 59.5–70.1, lng 20.0–31.6
-  // Example: major airport coordinates (lat, lng)
-const airports = [
-  { name: "JFK", coords: [40.6413, -73.7781] }, // New York
-  { name: "LHR", coords: [51.4700, -0.4543] },  // London
-  { name: "CDG", coords: [49.0097, 2.5479] },   // Paris
-  { name: "DXB", coords: [25.2532, 55.3657] },  // Dubai
-  { name: "HND", coords: [35.5494, 139.7798] }, // Tokyo
-  { name: "LAX", coords: [33.9416, -118.4085] },// Los Angeles
-  { name: "SIN", coords: [1.3644, 103.9915] },  // Singapore
-  { name: "SYD", coords: [-33.9399, 151.1753] } // Sydney
-];
-
-// Example: popular routes (pairs of airport indices)
-const routes = [
-  [0, 1], // JFK <-> LHR
-  [1, 2], // LHR <-> CDG
-  [0, 5], // JFK <-> LAX
-  [3, 4], // DXB <-> HND
-  [4, 6], // HND <-> SIN
-  [6, 7], // SIN <-> SYD
-  [2, 3], // CDG <-> DXB
-  [5, 7], // LAX <-> SYD
-];
-
-// Generate N random markers along these routes
-const NUM_MARKERS = 10000;
-const randomMarkers = useMemo(() => {
-  return Array.from({ length: NUM_MARKERS }, (_, i) => {
-    // Pick a random route
-    const [fromIdx, toIdx] = routes[Math.floor(Math.random() * routes.length)];
-    const from = airports[fromIdx].coords;
-    const to = airports[toIdx].coords;
-
-    // Pick a random point along the route (linear interpolation)
-    const t = Math.random();
-    const lat = from[0] + (to[0] - from[0]) * t + (Math.random() - 0.5) * 1.5; // add a little scatter
-    const lng = from[1] + (to[1] - from[1]) * t + (Math.random() - 0.5) * 1.5;
-
-    return (
-      <Marker
-        key={i}
-        position={[lat, lng]}
-        icon={RotatedIcon(Math.random() * 360, selectedMap === 'CartoVoyagerDark')}
-      >
-        <Popup>
-          Simulated Flight #{i + 1}<br />
-          {airports[fromIdx].name} → {airports[toIdx].name}
-        </Popup>
-      </Marker>
-    );
-  });
-  // Add selectedMap as a dependency so icons update when map changes
-}, [selectedMap]);
+  
   const createClusterCustomIcon = (cluster) => {
   return L.divIcon({
     html: `
@@ -138,6 +92,104 @@ const randomMarkers = useMemo(() => {
     iconAnchor: [18, 18],
   });
 };
+
+
+
+  const handleMarkerClick = async (callsign, idx) => {
+    setSelectedAircraftIdx(idx);
+    setLoadingInfo(idx);
+    try {
+      const res = await fetch(`http://localhost:8000/api/flights/info/${callsign}`);
+      const data = await res.json();
+      setSelectedInfo(prev => ({ ...prev, [idx]: data }));
+    } catch (err) {
+      setSelectedInfo(prev => ({ ...prev, [idx]: { error: 'Failed to fetch info' } }));
+    } finally {
+      setLoadingInfo(null);
+    }
+  };
+
+  // Example POST request from frontend
+  const fetchAircraftsInBox = async (sw, ne) => {
+    const res = await fetch('http://localhost:8000/api/flights/box', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sw, ne })
+    });
+    const data = await res.json();
+    console.log('Aircrafts from /api/flights/box:', data); // <-- log here
+    return data;
+  };
+
+  const handleFetchBox = useCallback(async (sw, ne) => {
+    if (!canFetch) return;
+    setCanFetch(false);
+
+    try {
+      const data = await fetchAircraftsInBox(sw, ne);
+      // Map geo_point to latitude/longitude if needed
+      const mapped = data.map(f => ({
+        ...f,
+        latitude: f.latitude ?? f.geo_point?.latitude,
+        longitude: f.longitude ?? f.geo_point?.longitude,
+      }));
+      setAircrafts(mapped);
+    } catch (err) {
+      console.error('Failed to fetch aircrafts in box:', err);
+    } finally {
+      setTimeout(() => setCanFetch(true), 10000); // 10 seconds
+    }
+  }, [canFetch, fetchAircraftsInBox]);
+
+  function MapEventHandler({ onFetch }) {
+    useMapEvents({
+      moveend: (e) => {
+        const map = e.target;
+        const zoom = map.getZoom();
+        if (zoom >= 3) {
+          const bounds = map.getBounds();
+          const sw = bounds.getSouthWest();
+          const ne = bounds.getNorthEast();
+          onFetch(
+            { lat: sw.lat, lng: sw.lng },
+            { lat: ne.lat, lng: ne.lng }
+          );
+        }
+      },
+      zoomend: (e) => {
+        const map = e.target;
+        const zoom = map.getZoom();
+        if (zoom >= 3) {
+          const bounds = map.getBounds();
+          const sw = bounds.getSouthWest();
+          const ne = bounds.getNorthEast();
+          onFetch(
+            { lat: sw.lat, lng: sw.lng },
+            { lat: ne.lat, lng: ne.lng }
+          );
+        }
+      }
+    });
+    return null;
+  }
+
+  // Initial fetch on mount if zoom >= 3
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const zoom = map.getZoom();
+    if (zoom >= 3) {
+      const bounds = map.getBounds();
+      const sw = bounds.getSouthWest();
+      const ne = bounds.getNorthEast();
+      handleFetchBox(
+        { lat: sw.lat, lng: sw.lng },
+        { lat: ne.lat, lng: ne.lng }
+      );
+    }
+    // Only run once on mount
+    // eslint-disable-next-line
+  }, []);
 
   return (
     <div className="map-wrapper">
@@ -203,41 +255,132 @@ const randomMarkers = useMemo(() => {
 
       <div className="animated-toggle">
   <input
-    type="checkbox"
-    id="traffic-toggle"
-    checked={trafficType === 'ship'}
-    onChange={() => setTrafficType(trafficType === 'plane' ? 'ship' : 'plane')}
+    type="radio"
+    id="traffic-all"
+    name="traffic-toggle"
+    checked={trafficType === 'all'}
+    onChange={() => setTrafficType('all')}
   />
-  <label htmlFor="traffic-toggle">
-    <span className="emoji plane">✈️</span>
-    <span className="toggle-bg"></span>
-    <span className="toggle-slider"></span>
-    <span className="emoji ship">🚢</span>
-  </label>
+  <input
+    type="radio"
+    id="traffic-plane"
+    name="traffic-toggle"
+    checked={trafficType === 'plane'}
+    onChange={() => setTrafficType('plane')}
+  />
+  <input
+    type="radio"
+    id="traffic-ship"
+    name="traffic-toggle"
+    checked={trafficType === 'ship'}
+    onChange={() => setTrafficType('ship')}
+  />
+  <label htmlFor="traffic-all" className="toggle-label all">All</label>
+  <label htmlFor="traffic-plane" className="toggle-label plane">✈️</label>
+  <label htmlFor="traffic-ship" className="toggle-label ship">🚢</label>
+  <span className="toggle-bg"></span>
+  <span className={`toggle-slider ${trafficType}`}></span>
 </div>
 
       {/* The Map */}
       <MapContainer
+        ref={mapRef}
+        whenCreated={mapInstance => { mapRef.current = mapInstance; }}
         center={[60.1695, 24.9354]}
         zoom={6}
-        minZoom={2} // <-- Add this line (adjust as needed)
+        minZoom={2}
         zoomControl={false}
         style={{ height: '100vh', width: '100vw' }}
-        maxBounds={[[-85, -180], [85, 180]]} // Prevents panning outside the world
-        maxBoundsViscosity={1.0} // Makes the bounds strict
+        maxBounds={[[-85, -180], [85, 180]]}
+        maxBoundsViscosity={1.0}
       >
+        <MapEventHandler onFetch={handleFetchBox} />
         <TileLayer
           url={tileLayers[selectedMap]}
           attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
         />
         <ZoomControl className="leaflet-control-zoom" position="bottomleft" />
         <MarkerClusterGroup iconCreateFunction={createClusterCustomIcon}>
-          <Marker position={[60.1695, 24.9354]} icon={airplaneIcon}>
-            <Popup>Helsinki</Popup>
-          </Marker>
-          {randomMarkers}
+          {aircrafts
+            .filter(plane =>
+              typeof plane.latitude === 'number' &&
+              typeof plane.longitude === 'number' &&
+              !isNaN(plane.latitude) &&
+              !isNaN(plane.longitude)
+            )
+            .map((plane, idx) =>
+              <Marker
+                key={idx}
+                position={[plane.latitude, plane.longitude]}
+                icon={RotatedIcon(plane.track || 0, selectedMap === 'CartoVoyagerDark')}
+                eventHandlers={{
+                  click: () => handleMarkerClick(plane.callsign, idx)
+                }}
+              />
+            )
+          }
         </MarkerClusterGroup>
       </MapContainer>
+
+      <div className="aircraft-info-bar">
+  {selectedAircraftIdx !== null && selectedInfo[selectedAircraftIdx] && !selectedInfo[selectedAircraftIdx].error && (() => {
+    const info = selectedInfo[selectedAircraftIdx];
+    if (!info) return null;
+    return (
+      <div className="aircraft-info-content">
+        {/* Aircraft image if available */}
+        <div className="aircraft-info-img-placeholder">
+          {info.imageUrl ? (
+            <a href={info.imageLink} target="_blank" rel="noopener noreferrer">
+              <img src={info.imageUrl} alt="Aircraft" style={{width: '80px', height: '60px', objectFit: 'cover', borderRadius: '10px'}} />
+            </a>
+          ) : (
+            <span style={{color: '#aaa'}}>No image</span>
+          )}
+        </div>
+        <div className="aircraft-info-main">
+          <div className="aircraft-info-row">
+            <span className="flight-number">{info.number || info.callSign}</span>
+            <span className="airline">{info.airline?.name || ''}</span>
+            <span className={`status status-${(info.status || '').toLowerCase()}`}>{info.status}</span>
+          </div>
+          <div className="aircraft-info-row">
+            <span className="airport">
+              <strong>{info.departure?.airport?.iata || info.departure?.airport?.icao}</strong>
+              &nbsp;{info.departure?.airport?.municipalityName || info.departure?.airport?.name}
+            </span>
+            <span className="arrow">→</span>
+            <span className="airport">
+              <strong>{info.arrival?.airport?.iata || info.arrival?.airport?.icao}</strong>
+              &nbsp;{info.arrival?.airport?.municipalityName || info.arrival?.airport?.name}
+            </span>
+          </div>
+          <div className="aircraft-info-row times">
+            <span>
+              <strong>Dep:</strong> {info.departure?.scheduledTime?.local || info.departure?.scheduledTime?.utc}
+            </span>
+            <span>
+              <strong>Arr:</strong> {info.arrival?.predictedTime?.local || info.arrival?.predictedTime?.utc}
+            </span>
+            <span>
+              <strong>Aircraft:</strong> {info.aircraft?.model} ({info.aircraft?.reg})
+            </span>
+          </div>
+        </div>
+        <button className="close-btn" onClick={() => setSelectedAircraftIdx(null)}>×</button>
+      </div>
+    );
+  })()}
+  {selectedAircraftIdx !== null && loadingInfo === selectedAircraftIdx && (
+    <div className="aircraft-info-content">Loading info...</div>
+  )}
+  {selectedAircraftIdx !== null && selectedInfo[selectedAircraftIdx]?.error && (
+    <div className="aircraft-info-content" style={{color: 'red'}}>
+      {selectedInfo[selectedAircraftIdx].error}
+      <button className="close-btn" onClick={() => setSelectedAircraftIdx(null)}>×</button>
+    </div>
+  )}
+</div>
     </div>
   );
 }
